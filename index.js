@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const SSLCommerzPayment = require("sslcommerz-lts");
 require("dotenv").config();
+const { v4: uuidv4 } = require("uuid");
 
 const port = process.env.PORT || 5000;
 
@@ -17,12 +18,14 @@ app.use(express.urlencoded({ extended: true }));
 const { store_id, store_passwd } = process.env;
 const is_live = false; //true for live, false for sandbox
 
+const trxId = "Trx" + uuidv4();
+
 app.get("/init", (req, res) => {
   const data = {
     total_amount: 100,
     currency: "BDT",
-    tran_id: "REF123", // use unique tran_id for each api call
-    success_url: "http://localhost:5000/success",
+    tran_id: trxId, // use unique tran_id for each api call
+    success_url: `http://localhost:5000/success/${trxId}`,
     fail_url: "http://localhost:5000/fail",
     cancel_url: "http://localhost:5000/cancel",
     ipn_url: "http://localhost:5000/ipn",
@@ -48,11 +51,17 @@ app.get("/init", (req, res) => {
     ship_postcode: 1000,
     ship_country: "Bangladesh",
   };
+  console.log(data);
   const sslcz = new SSLCommerzPayment(store_id, store_passwd, is_live);
   sslcz.init(data).then((response) => {
     // Redirect the user to payment gateway
     const GatewayPageURL = response.GatewayPageURL;
     res.send(GatewayPageURL);
+  });
+
+  app.post("/success/:id", async (req, res) => {
+    const id = req.params.id;
+    console.log(id);
   });
 });
 
