@@ -51,17 +51,15 @@ app.get("/init", (req, res) => {
     ship_postcode: 1000,
     ship_country: "Bangladesh",
   };
-  console.log(data);
   const sslcz = new SSLCommerzPayment(store_id, store_passwd, is_live);
   sslcz.init(data).then((response) => {
-    // Redirect the user to payment gateway
     const GatewayPageURL = response.GatewayPageURL;
     res.send(GatewayPageURL);
   });
 
   app.post("/success/:id", async (req, res) => {
-    const id = req.params.id;
-    console.log(id);
+    const { id } = req.params;
+    res.redirect(`http://localhost:5173/success/${id}`);
   });
 });
 
